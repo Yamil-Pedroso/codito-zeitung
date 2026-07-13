@@ -5,7 +5,7 @@ import gesundheit from "./images/cards-cat/salud_educacion_sociedad.png";
 import kultur from "./images/cards-cat/cultura.png";
 import transport from "./images/cards-cat/transporte_asuntos_zurich.png";
 import sport from "./images/cards-cat/deportes.png";
-import panorama from "./images/cards-cat/swiss-panorama.webp";
+import panorama from "./images/cards-cat/swiss-panorama.png";
 
 interface Asset {
   [key: string]: string;
