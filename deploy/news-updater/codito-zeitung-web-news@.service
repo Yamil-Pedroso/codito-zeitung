@@ -1,0 +1,18 @@
+[Unit]
+Description=Codito Zeitung website RSS update (%i)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/ai-sysadmin/codito-zeitung-web-news
+Environment=TZ=Europe/Zurich
+Environment=PATH=/root/.nvm/versions/node/v24.17.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/bin
+Environment=HOME=/root
+Environment=PM2_HOME=/root/.pm2
+ExecStart=/usr/bin/python3 /opt/ai-sysadmin/codito-zeitung-web-news/codito_zeitung_web_news.py --mode %i
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/opt/ai-sysadmin/codito-zeitung-web-news /var/www/codito-zeitung /root/.pm2

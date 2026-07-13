@@ -7,18 +7,11 @@ import { categoryImages } from '../Data/categoryImages'
 import { articles } from '../Data/news'
 import type { Article } from '../Types/news'
 
-const placeholderContent = [
-  'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Viverra aliquet eget sit amet tellus cras adipiscing enim eu turpis.',
-  'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.',
-  'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Praesent elementum facilisis leo vel fringilla est ullamcorper eget nulla facilisi etiam dignissim.',
-  'Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Integer malesuada nunc vel risus commodo viverra maecenas accumsan lacus vel facilisis.',
-]
-
 export default function NewsDetailsPage({ article }: { article: Article }) {
   const [query, setQuery] = useState('')
   const [saved, setSaved] = useState(false)
   const related = articles.filter((item) => item.id !== article.id).slice(0, 3)
-  const paragraphs = article.content?.length ? article.content : placeholderContent
+  const paragraphs = article.content?.length ? article.content : [article.excerpt]
 
   return <div className="site-shell"><div className="paper detail-paper">
     <Header query={query} setQuery={setQuery} />
@@ -29,6 +22,9 @@ export default function NewsDetailsPage({ article }: { article: Article }) {
           <span className="detail-category">{article.category}</span>
           <h2>{article.title}</h2>
           <p className="detail-deck">{article.excerpt}</p>
+          {article.url && <a className="original-source-link" href={article.url} target="_blank" rel="noreferrer">
+            Originalartikel bei {article.source} lesen <HiOutlineExternalLink />
+          </a>}
           <div className="detail-byline">
             <div><strong>{article.source}</strong><span>Redaktion Codito Zeitung</span></div>
             <span><HiOutlineClock /> {article.time} · {article.readTime} Lesezeit</span>
@@ -52,14 +48,12 @@ export default function NewsDetailsPage({ article }: { article: Article }) {
           </aside>
           <div className="article-body">
             {paragraphs.map((paragraph, index) => <p className={index === 0 ? 'drop-cap' : ''} key={index}>{paragraph}</p>)}
-            <blockquote>«Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt.»</blockquote>
-            <p>{placeholderContent[1]}</p>
           </div>
           <aside className="source-box">
             <span>Quelle</span>
             <strong>{article.source}</strong>
-            <p>Dieser Beitrag wird künftig automatisch mit der Originalquelle verknüpft.</p>
-            <a href={`#/nachricht/${article.id}`} aria-disabled="true">Originalbeitrag <HiOutlineExternalLink /></a>
+            <p>Die Zusammenfassung basiert auf den Angaben der Originalquelle.</p>
+            {article.url && <a href={article.url} target="_blank" rel="noreferrer">Bei {article.source} weiterlesen <HiOutlineExternalLink /></a>}
           </aside>
         </div>
       </article>

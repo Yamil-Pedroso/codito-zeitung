@@ -14,6 +14,7 @@ export interface Article {
   title: string
   excerpt: string
   content?: string[]
+  url?: string
   time: string
   readTime: string
   imagePosition: string

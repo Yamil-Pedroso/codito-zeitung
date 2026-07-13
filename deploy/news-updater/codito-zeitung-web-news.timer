@@ -1,0 +1,12 @@
+[Unit]
+Description=Check daily for due Codito Zeitung website news update
+
+[Timer]
+OnCalendar=*-*-* 09:15:00 Europe/Zurich
+Persistent=true
+RandomizedDelaySec=0
+Unit=codito-zeitung-web-news@regular.service
+
+[Install]
+WantedBy=timers.target
+

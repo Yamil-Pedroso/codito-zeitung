@@ -1,0 +1,11 @@
+[Unit]
+Description=Refresh Codito Zeitung website with the Sunday weekly selection
+
+[Timer]
+OnCalendar=Sun *-*-* 10:15:00 Europe/Zurich
+Persistent=true
+RandomizedDelaySec=0
+Unit=codito-zeitung-web-news@weekly.service
+
+[Install]
+WantedBy=timers.target
