@@ -1,25 +1,40 @@
 import { useEffect, useState } from 'react'
+import { Toaster } from 'sonner'
 import { articles } from './Data/news'
 import HomePage from './Pages/HomePage'
 import NewsDetailsPage from './Pages/NewsDetailsPage'
+import SavedNewsPage from './Pages/SavedNewsPage'
+import { getSavedArticles } from './Utils/articleActions'
 
-function getArticleId() {
-  const match = window.location.hash.match(/^#\/nachricht\/(\d+)$/)
+function getArticleId(hash: string) {
+  const match = hash.match(/^#\/nachricht\/(\d+)$/)
   return match ? Number(match[1]) : null
 }
 
 export default function App() {
-  const [articleId, setArticleId] = useState(getArticleId)
+  const [hash, setHash] = useState(window.location.hash)
 
   useEffect(() => {
     const handleRouteChange = () => {
-      setArticleId(getArticleId())
+      setHash(window.location.hash)
       window.scrollTo({ top: 0, behavior: 'smooth' })
     }
     window.addEventListener('hashchange', handleRouteChange)
     return () => window.removeEventListener('hashchange', handleRouteChange)
   }, [])
 
-  const article = articleId === null ? undefined : articles.find((item) => item.id === articleId)
-  return article ? <NewsDetailsPage article={article} /> : <HomePage />
+  const articleId = getArticleId(hash)
+  const article = articleId === null
+    ? undefined
+    : articles.find((item) => item.id === articleId) ?? getSavedArticles().find((item) => item.id === articleId)
+  const page = hash === '#/gespeichert'
+    ? <SavedNewsPage />
+    : article
+      ? <NewsDetailsPage article={article} />
+      : <HomePage />
+
+  return <>
+    <Toaster position="top-right" closeButton toastOptions={{ className: 'vintage-toast' }} />
+    {page}
+  </>
 }

@@ -1,7 +1,8 @@
-import { useState } from "react";
-import { HiOutlineMenuAlt3, HiOutlineX } from "react-icons/hi";
+import { useEffect, useState } from "react";
+import { HiBookmark, HiOutlineBookmark, HiOutlineMenuAlt3, HiOutlineX } from "react-icons/hi";
 import { categoryNavigation } from "../Data/categoryNavigation";
 import type { Category } from "../Types/news";
+import { getSavedArticleIds, SAVED_ARTICLES_CHANGED_EVENT } from "../Utils/articleActions";
 import LanguageSelector from "./LanguageSelector";
 import Ornament from "./Ornament";
 
@@ -11,6 +12,16 @@ export default function Header({
   activeCategory?: Category | null;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [savedCount, setSavedCount] = useState(() => getSavedArticleIds().length);
+  useEffect(() => {
+    const syncSavedCount = () => setSavedCount(getSavedArticleIds().length);
+    window.addEventListener(SAVED_ARTICLES_CHANGED_EVENT, syncSavedCount);
+    window.addEventListener("storage", syncSavedCount);
+    return () => {
+      window.removeEventListener(SAVED_ARTICLES_CHANGED_EVENT, syncSavedCount);
+      window.removeEventListener("storage", syncSavedCount);
+    };
+  }, []);
   const localDate = new Date().toLocaleDateString("de-CH", {
     weekday: "long",
     day: "numeric",
@@ -64,6 +75,10 @@ export default function Header({
               {item.label}
             </a>
           ))}
+          <a className={`${window.location.hash === "#/gespeichert" ? "active " : ""}saved-nav-link${savedCount ? " has-saved" : ""}`} href="#/gespeichert" onClick={() => setMenuOpen(false)}>
+            {savedCount ? <HiBookmark /> : <HiOutlineBookmark />} Merkliste
+            {savedCount > 0 && <span className="saved-nav-count" aria-label={`${savedCount} gespeicherte Nachrichten`}>{savedCount}</span>}
+          </a>
         </div>
       </nav>
     </header>

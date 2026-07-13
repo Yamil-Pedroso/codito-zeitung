@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { HiOutlineArrowLeft, HiOutlineClock, HiOutlineExternalLink } from 'react-icons/hi'
 import ArticleActions from '../Components/ArticleActions'
 import Header from '../Components/Header'
@@ -6,8 +7,10 @@ import Ornament from '../Components/Ornament'
 import { getArticleImage } from '../Data/categoryImages'
 import { articles } from '../Data/news'
 import type { Article } from '../Types/news'
+import { getSavedArticleIds, setArticleSaved } from '../Utils/articleActions'
 
 export default function NewsDetailsPage({ article }: { article: Article }) {
+  const [saved, setSaved] = useState<number[]>(getSavedArticleIds)
   const related = articles.filter((item) => item.id !== article.id).slice(0, 3)
   const paragraphs = article.content?.length ? article.content : [article.excerpt]
 
@@ -56,7 +59,7 @@ export default function NewsDetailsPage({ article }: { article: Article }) {
       <section className="related-news">
         <div className="related-heading"><Ornament compact /><h2>Weitere Nachrichten</h2><Ornament compact /></div>
         <div className="news-grid">
-          {related.map((item) => <NewsCard key={item.id} article={item} saved={false} onSave={() => undefined} />)}
+          {related.map((item) => <NewsCard key={item.id} article={item} saved={saved.includes(item.id)} onSave={() => { const nextSaved = !saved.includes(item.id); setSaved(setArticleSaved(item, nextSaved)) }} />)}
         </div>
       </section>
     </main>

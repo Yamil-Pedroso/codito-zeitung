@@ -20,9 +20,8 @@ export default function ArticleActions({ article }: { article: Article }) {
 
   const toggleSaved = () => {
     const next = !saved
-    setArticleSaved(article.id, next)
+    setArticleSaved(article, next)
     setSaved(next)
-    notify(next ? 'Im Browser gespeichert' : 'Aus gespeicherten Artikeln entfernt')
     close(saveMenu)
   }
 

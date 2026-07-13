@@ -106,7 +106,7 @@ export default function HomePage() {
         <p className="result-count" aria-live="polite">{matchingArticles.length} {matchingArticles.length === 1 ? 'Nachricht gefunden' : 'Nachrichten gefunden'}</p>
         {visibleArticles.length ? <>
           <div className="news-grid">
-            {visibleArticles.map((article, index) => <NewsCard key={article.id} article={article} featured={index === 0 && filter === 'Alle' && !query} saved={saved.includes(article.id)} onSave={() => { const nextSaved = !saved.includes(article.id); setSaved(setArticleSaved(article.id, nextSaved)) }} />)}
+            {visibleArticles.map((article, index) => <NewsCard key={article.id} article={article} featured={index === 0 && filter === 'Alle' && !query} saved={saved.includes(article.id)} onSave={() => { const nextSaved = !saved.includes(article.id); setSaved(setArticleSaved(article, nextSaved)) }} />)}
           </div>
           {hasMore && <div className="load-more"><button onClick={() => setVisibleCount((count) => count + PAGE_SIZE)}>Mehr Nachrichten laden<span>Noch {matchingArticles.length - visibleArticles.length} verfügbar</span></button></div>}
         </> : <div className="empty-state"><span>⌕</span><h3>Keine passende Nachricht gefunden</h3><p>Versuchen Sie einen anderen Begriff oder wechseln Sie die Rubrik.</p><button onClick={resetSearch}>Alle Nachrichten anzeigen</button></div>}

@@ -1,6 +1,9 @@
 import type { Article } from "../Types/news";
+import { toast } from "sonner";
 
 const SAVED_ARTICLES_KEY = "codito-zeitung:saved-articles";
+const SAVED_ARTICLE_RECORDS_KEY = "codito-zeitung:saved-article-records";
+export const SAVED_ARTICLES_CHANGED_EVENT = "codito-zeitung:saved-articles-changed";
 
 function articleUrl(article: Article) {
   return `${window.location.origin}${window.location.pathname}#/nachricht/${article.id}`;
@@ -80,12 +83,40 @@ export function getSavedArticleIds(): number[] {
   }
 }
 
-export function setArticleSaved(articleId: number, saved: boolean) {
+export function getSavedArticles(): Article[] {
+  try {
+    const value = JSON.parse(localStorage.getItem(SAVED_ARTICLE_RECORDS_KEY) ?? "[]");
+    return Array.isArray(value)
+      ? value.filter((article): article is Article =>
+          typeof article === "object" && article !== null && typeof article.id === "number",
+        )
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+export function setArticleSaved(article: Article, saved: boolean) {
   const current = getSavedArticleIds();
   const next = saved
-    ? Array.from(new Set([...current, articleId]))
-    : current.filter((id) => id !== articleId);
+    ? Array.from(new Set([...current, article.id]))
+    : current.filter((id) => id !== article.id);
+  const currentArticles = getSavedArticles();
+  const nextArticles = saved
+    ? [...currentArticles.filter((item) => item.id !== article.id), article]
+    : currentArticles.filter((item) => item.id !== article.id);
   localStorage.setItem(SAVED_ARTICLES_KEY, JSON.stringify(next));
+  localStorage.setItem(SAVED_ARTICLE_RECORDS_KEY, JSON.stringify(nextArticles));
+  window.dispatchEvent(new CustomEvent(SAVED_ARTICLES_CHANGED_EVENT, { detail: { count: next.length } }));
+  if (saved) {
+    toast.success("Nachricht erfolgreich gespeichert", {
+      description: "Sie wurde Ihrer Merkliste hinzugefügt.",
+    });
+  } else {
+    toast("Nachricht aus der Merkliste entfernt", {
+      description: "Der Beitrag wurde aus Ihren gespeicherten Nachrichten gelöscht.",
+    });
+  }
   return next;
 }
 
