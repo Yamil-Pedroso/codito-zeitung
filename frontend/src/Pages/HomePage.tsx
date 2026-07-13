@@ -5,6 +5,7 @@ import LeadStory from '../Components/LeadStory'
 import NewsCard from '../Components/NewsCard'
 import SectionTitle from '../Components/SectionTitle'
 import SourceCards from '../Components/SourceCards'
+import SwissStationClock from '../Components/SwissStationClock'
 import TopicsBar from '../Components/TopicsBar'
 import { categoryFromHash } from '../Data/categoryNavigation'
 import { articles } from '../Data/news'
@@ -77,7 +78,10 @@ export default function HomePage() {
   return <div className="site-shell"><div className="paper">
     <Header activeCategory={filter === 'Alle' ? null : filter} />
     <main>
-      <LeadStory />
+      <div className="frontispiece">
+        <LeadStory />
+        <SwissStationClock />
+      </div>
       <SourceCards />
       <TopicsBar />
       <section className="latest" id="nachrichten">

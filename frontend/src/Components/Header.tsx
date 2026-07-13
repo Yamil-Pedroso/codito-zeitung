@@ -2,6 +2,7 @@ import { useState } from "react";
 import { HiOutlineMenuAlt3, HiOutlineX } from "react-icons/hi";
 import { categoryNavigation } from "../Data/categoryNavigation";
 import type { Category } from "../Types/news";
+import LanguageSelector from "./LanguageSelector";
 import Ornament from "./Ornament";
 
 export default function Header({
@@ -24,6 +25,7 @@ export default function Header({
         <a className="search-trigger" href="#nachrichten">
           Nachrichten finden
         </a>
+        <LanguageSelector />
       </div>
       <div className="masthead">
         <div className="masthead-kicker">
