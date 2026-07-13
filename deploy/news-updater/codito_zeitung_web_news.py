@@ -32,12 +32,14 @@ OLLAMA_URL = 'http://127.0.0.1:11434/api/generate'
 OLLAMA_MODEL = 'qwen2.5:0.5b'
 SUMMARY_VERSION = 3
 FAILED_CACHE_TTL = dt.timedelta(hours=12)
+ARTICLE_LIMIT = 30
 
 FEEDS = [
     ('SRF News', 'https://www.srf.ch/news/bnf/rss/1646', 4),
     ('ETH Zürich', 'https://www.ethz.ch/de/news-und-veranstaltungen/eth-news/news/_jcr_content.feed', 5),
     ('NZZ', 'https://www.nzz.ch/recent.rss', 4),
     ('WOZ', 'https://www.woz.ch/t/startseite/feed', 4),
+    ('WWF Schweiz', 'https://www.wwf.ch/de/ueber-uns/medienmitteilungen', 5),
 ]
 ETH_FALLBACK_FEEDS = [
     'https://www.ethz.ch/de/news-und-veranstaltungen/eth-news/news/_jcr_content.feed.html?tag=news:dossiers/zukunftsblog',
@@ -47,6 +49,7 @@ ETH_FALLBACK_FEEDS = [
 CATEGORIES = [
     ('Politik, Abstimmungen & Recht', r'bundesrat|parlament|abstimm|initiative|referendum|gesetz|verordnung|gericht|wahl|politik|diplom|kanton'),
     ('Wirtschaft, Arbeit & Unternehmen', r'wirtschaft|bank|franken|börse|unternehmen|arbeitsmarkt|arbeitsplatz|stelle|finanz|konjunktur|inflation|startup|zins|handel'),
+    ('Umwelt, Klima & Biodiversität', r'umwelt|natur(?:schutz)?|biodiversität|artenvielfalt|artenschutz|klimawandel|klimaschutz|energiewende|erneuerbar|landwirtschaft|nachhaltig|wald|wälder|fluss|flüsse|gewässer|alpen|meer|ozean|pestizid|wildtier|ökosystem'),
     ('Wissenschaft, Technologie & KI', r'wissenschaft|forschung|technolog|digital|künstliche intelligenz|\bki\b|software|cyber|eth|epfl|innovation|robot|computer|klima'),
     ('Gesundheit, Bildung & Gesellschaft', r'gesundheit|spital|medizin|krank|gesellschaft|bildung|schule|universität|migration|bevölkerung|pflege|sozial|versicherung'),
     ('Verkehr, SBB & Zürich', r'zürich|sbb|\bbahn\b|verkehr|strasse|autobahn|flughafen|\btram\b|mobilität|transport|\bzug\b'),
@@ -67,6 +70,7 @@ SOURCE_DEFAULTS = {
     'ETH Zürich': 'Wissenschaft, Technologie & KI',
     'NZZ': 'Wirtschaft, Arbeit & Unternehmen',
     'WOZ': 'Gesundheit, Bildung & Gesellschaft',
+    'WWF Schweiz': 'Umwelt, Klima & Biodiversität',
 }
 
 
@@ -140,7 +144,91 @@ def classify(title: str, description: str, source: str) -> str:
     return max(matches)[2] if matches else SOURCE_DEFAULTS[source]
 
 
+class WWFPressParser(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.depth = 0
+        self.article_depth = None
+        self.current = None
+        self.capture = None
+        self.capture_depth = None
+        self.items = []
+
+    def handle_starttag(self, tag, attrs):
+        self.depth += 1
+        attributes = dict(attrs)
+        classes = set(attributes.get('class', '').split())
+        if tag == 'article' and 'node--type-press-release-page' in classes:
+            self.current = {'title': [], 'summary': [], 'date': [], 'url': ''}
+            self.article_depth = self.depth
+            return
+        if self.current is None:
+            return
+        if tag == 'a' and attributes.get('href', '').startswith('/de/medien/'):
+            self.current['url'] = urllib.parse.urljoin('https://www.wwf.ch', attributes['href'])
+        field = None
+        if 'field-name--field-publication-date' in classes:
+            field = 'date'
+        elif tag == 'h4':
+            field = 'title'
+        elif 'field-name--field-teaser-text' in classes:
+            field = 'summary'
+        if field:
+            self.capture = field
+            self.capture_depth = self.depth
+
+    def handle_data(self, data):
+        if self.current is not None and self.capture:
+            self.current[self.capture].append(data)
+
+    def handle_endtag(self, tag):
+        if self.current is not None and tag == 'article' and self.depth == self.article_depth:
+            self.items.append(self.current)
+            self.current = None
+            self.article_depth = None
+        if self.capture and self.depth == self.capture_depth:
+            self.capture = None
+            self.capture_depth = None
+        self.depth -= 1
+
+
+def fetch_wwf(url: str, weight: int):
+    request = urllib.request.Request(url, headers={'User-Agent': USER_AGENT})
+    with urllib.request.urlopen(request, timeout=25) as response:
+        data = response.read(2_000_000).decode(response.headers.get_content_charset() or 'utf-8', errors='replace')
+    parser = WWFPressParser()
+    parser.feed(data)
+    items = []
+    for entry in parser.items:
+        title = clean(' '.join(entry['title']))
+        summary = short_summary(' '.join(entry['summary']), title, 'WWF Schweiz')
+        try:
+            published = dt.datetime.strptime(clean(' '.join(entry['date'])), '%d.%m.%Y').replace(
+                hour=12,
+                tzinfo=now().tzinfo,
+            )
+        except ValueError:
+            continue
+        if not title or not entry['url']:
+            continue
+        text = f'{title} {summary}'
+        score = weight + (3 if IMPORTANT.search(text) else 0) + (1 if len(summary) > 80 else 0)
+        items.append({
+            'title': title,
+            'url': canonical(entry['url']),
+            'date': published.isoformat(),
+            'has_time': False,
+            'summary': summary,
+            'source': 'WWF Schweiz',
+            'category': 'Umwelt, Klima & Biodiversität',
+            'score': score,
+        })
+    return items
+
+
 def fetch(name: str, url: str, weight: int):
+    if name == 'WWF Schweiz':
+        return fetch_wwf(url, weight)
     request = urllib.request.Request(
         url,
         headers={'User-Agent': USER_AGENT},
@@ -207,7 +295,12 @@ def collect(since: dt.datetime):
             checked += 1
         except Exception as exc:
             errors.append(f'{name}: {type(exc).__name__}')
-    fresh = [item for item in found if dt.datetime.fromisoformat(item['date']).astimezone() >= since]
+    wwf_since = now() - dt.timedelta(days=30)
+    fresh = [
+        item for item in found
+        if dt.datetime.fromisoformat(item['date']).astimezone() >= since
+        or (item['source'] == 'WWF Schweiz' and dt.datetime.fromisoformat(item['date']).astimezone() >= wwf_since)
+    ]
     unique = {}
     title_index = {}
     for item in sorted(fresh, key=lambda value: (value['score'], value['date']), reverse=True):
@@ -220,7 +313,7 @@ def collect(since: dt.datetime):
     return list(unique.values()), checked, len(found), errors
 
 
-def select_balanced(items, limit: int = 7):
+def select_balanced(items, limit: int = ARTICLE_LIMIT):
     ranked = sorted(
         (item for item in items if item['score'] >= 4),
         key=lambda value: (value['score'], value['date']),
@@ -508,7 +601,7 @@ def render_typescript(items) -> str:
                 'excerpt': item['summary'],
                 'content': item.get('content', [item['summary']]),
                 'url': item['url'],
-                'time': published.strftime('%d.%m.%Y'),
+                'time': published.strftime('%d.%m.%Y · %H:%M Uhr') if item.get('has_time', True) else published.strftime('%d.%m.%Y'),
                 'readTime': f'{max(2, round(word_count / 180))} Min.',
                 'imagePosition': '50%',
             }
@@ -561,20 +654,6 @@ def main() -> None:
     seven_days_ago = started - dt.timedelta(days=7)
     items, checked, found, errors = collect(seven_days_ago)
     candidates = list(items)
-    if not weekly:
-        three_days_ago = started - dt.timedelta(days=3)
-        candidates = [
-            item for item in items
-            if dt.datetime.fromisoformat(item['date']).astimezone() >= three_days_ago
-        ]
-        present_sources = {item['source'] for item in candidates}
-        ranked = sorted(items, key=lambda value: (value['score'], value['date']), reverse=True)
-        for source, _, _ in FEEDS:
-            if source in present_sources:
-                continue
-            fallback = next((item for item in ranked if item['source'] == source), None)
-            if fallback:
-                candidates.append(fallback)
     selected = select_balanced(candidates)
     logging.info(
         'sources_checked=%d articles_found=%d fresh=%d selected=%d errors=%s',

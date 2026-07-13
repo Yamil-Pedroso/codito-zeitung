@@ -1,7 +1,8 @@
-export type Source = 'SRF News' | 'ETH Zürich' | 'NZZ' | 'WOZ'
+export type Source = 'SRF News' | 'ETH Zürich' | 'NZZ' | 'WOZ' | 'WWF Schweiz'
 export type Category =
   | 'Politik, Abstimmungen & Recht'
   | 'Wirtschaft, Arbeit & Unternehmen'
+  | 'Umwelt, Klima & Biodiversität'
   | 'Wissenschaft, Technologie & KI'
   | 'Gesundheit, Bildung & Gesellschaft'
   | 'Verkehr, SBB & Zürich'

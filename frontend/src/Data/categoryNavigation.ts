@@ -4,6 +4,7 @@ export const categoryNavigation: { label: string; slug: string; category: Catego
   { label: 'Titelseite', slug: '', category: null },
   { label: 'Politik', slug: 'politik', category: 'Politik, Abstimmungen & Recht' },
   { label: 'Wirtschaft', slug: 'wirtschaft', category: 'Wirtschaft, Arbeit & Unternehmen' },
+  { label: 'Umwelt', slug: 'umwelt', category: 'Umwelt, Klima & Biodiversität' },
   { label: 'Wissenschaft', slug: 'wissenschaft', category: 'Wissenschaft, Technologie & KI' },
   { label: 'Gesellschaft', slug: 'gesellschaft', category: 'Gesundheit, Bildung & Gesellschaft' },
   { label: 'Verkehr', slug: 'verkehr', category: 'Verkehr, SBB & Zürich' },

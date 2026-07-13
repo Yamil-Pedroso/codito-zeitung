@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { HiOutlineArrowLeft, HiOutlineBookmark, HiOutlineClock, HiOutlineExternalLink, HiOutlineShare } from 'react-icons/hi'
+import { HiOutlineArrowLeft, HiOutlineClock, HiOutlineExternalLink } from 'react-icons/hi'
+import ArticleActions from '../Components/ArticleActions'
 import Header from '../Components/Header'
 import NewsCard from '../Components/NewsCard'
 import Ornament from '../Components/Ornament'
@@ -8,13 +8,11 @@ import { articles } from '../Data/news'
 import type { Article } from '../Types/news'
 
 export default function NewsDetailsPage({ article }: { article: Article }) {
-  const [query, setQuery] = useState('')
-  const [saved, setSaved] = useState(false)
   const related = articles.filter((item) => item.id !== article.id).slice(0, 3)
   const paragraphs = article.content?.length ? article.content : [article.excerpt]
 
   return <div className="site-shell"><div className="paper detail-paper">
-    <Header query={query} setQuery={setQuery} />
+    <Header />
     <main className="detail-main">
       <a className="back-link" href="#/"><HiOutlineArrowLeft /> Zurück zur Titelseite</a>
       <article className="article-detail">
@@ -28,10 +26,7 @@ export default function NewsDetailsPage({ article }: { article: Article }) {
           <div className="detail-byline">
             <div><strong>{article.source}</strong><span>Redaktion Codito Zeitung</span></div>
             <span><HiOutlineClock /> {article.time} · {article.readTime} Lesezeit</span>
-            <div className="detail-actions">
-              <button onClick={() => setSaved(!saved)} aria-label="Nachricht speichern"><HiOutlineBookmark /> {saved ? 'Gespeichert' : 'Speichern'}</button>
-              <button aria-label="Nachricht teilen"><HiOutlineShare /> Teilen</button>
-            </div>
+            <ArticleActions article={article} />
           </div>
         </header>
 
@@ -65,6 +60,6 @@ export default function NewsDetailsPage({ article }: { article: Article }) {
         </div>
       </section>
     </main>
-    <footer className="detail-footer"><div className="footer-brand"><span>+</span><strong>CODITO ZEITUNG</strong><span>+</span></div><p>Vier Quellen. Ein Land. Alle Perspektiven.</p><small>© 2026 Codito Zeitung · Mit Neugier in der Schweiz gemacht</small></footer>
+    <footer className="detail-footer"><div className="footer-brand"><span>+</span><strong>CODITO ZEITUNG</strong><span>+</span></div><p>Fünf Quellen. Ein Land. Alle Perspektiven.</p><small>© 2026 Codito Zeitung · Mit Neugier in der Schweiz gemacht</small></footer>
   </div></div>
 }

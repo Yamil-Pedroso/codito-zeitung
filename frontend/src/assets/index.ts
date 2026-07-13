@@ -1,11 +1,11 @@
-import politik from "./images/cards-cat/politica.png";
-import wirtschaft from "./images/cards-cat/economia.png";
-import wissenschaft from "./images/cards-cat/ciencia.png";
-import gesundheit from "./images/cards-cat/salud_educacion_sociedad.png";
-import kultur from "./images/cards-cat/cultura.png";
-import transport from "./images/cards-cat/transporte_asuntos_zurich.png";
-import sport from "./images/cards-cat/deportes.png";
-import panorama from "./images/cards-cat/swiss-panorama.png";
+import politik from "./images/cards-cat/politica.webp";
+import wirtschaft from "./images/cards-cat/economia.webp";
+import wissenschaft from "./images/cards-cat/ciencia.webp";
+import gesundheit from "./images/cards-cat/salud_educacion_sociedad.webp";
+import kultur from "./images/cards-cat/cultura.webp";
+import transport from "./images/cards-cat/transporte_asuntos_zurich.webp";
+import sport from "./images/cards-cat/deportes.webp";
+import panorama from "./images/cards-cat/swiss-panorama.webp";
 
 interface Asset {
   [key: string]: string;
