@@ -3,7 +3,7 @@ import ArticleActions from '../Components/ArticleActions'
 import Header from '../Components/Header'
 import NewsCard from '../Components/NewsCard'
 import Ornament from '../Components/Ornament'
-import { categoryImages } from '../Data/categoryImages'
+import { getArticleImage } from '../Data/categoryImages'
 import { articles } from '../Data/news'
 import type { Article } from '../Types/news'
 
@@ -31,7 +31,7 @@ export default function NewsDetailsPage({ article }: { article: Article }) {
         </header>
 
         <figure className="detail-figure">
-          <img src={categoryImages[article.category]} alt={`Vintage-Illustration: ${article.category}`} />
+          <img src={getArticleImage(article)} alt={`Vintage-Illustration: ${article.category}`} />
           <figcaption><span>Codito Zeitung · Archivillustration</span><span>{article.category}</span></figcaption>
         </figure>
 

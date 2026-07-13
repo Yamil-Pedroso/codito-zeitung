@@ -1,5 +1,5 @@
 import assets from '../assets'
-import type { Category } from '../Types/news'
+import type { Article, Category } from '../Types/news'
 
 export const categoryImages: Record<Category, string> = {
   'Politik, Abstimmungen & Recht': assets.politik,
@@ -10,4 +10,8 @@ export const categoryImages: Record<Category, string> = {
   'Verkehr, SBB & Zürich': assets.transport,
   'Kultur': assets.kultur,
   'Sport': assets.sport,
+}
+
+export function getArticleImage(article: Pick<Article, 'source' | 'category'>): string {
+  return article.source === 'WWF Schweiz' ? assets.nature : categoryImages[article.category]
 }
