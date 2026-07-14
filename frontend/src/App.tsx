@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Toaster } from 'sonner'
+import WelcomeModal from './Components/WelcomeModal'
 import { articles } from './Data/news'
 import HomePage from './Pages/HomePage'
 import NewsDetailsPage from './Pages/NewsDetailsPage'
@@ -35,6 +36,7 @@ export default function App() {
 
   return <>
     <Toaster position="top-right" closeButton toastOptions={{ className: 'vintage-toast' }} />
+    <WelcomeModal />
     {page}
   </>
 }
