@@ -111,7 +111,7 @@ El actualizador clasifica cada noticia en una de las categorías del frontend:
 
 La clasificación se realiza comparando el título y el resumen con palabras clave. Después se asigna una puntuación que favorece asuntos relevantes para Suiza y reduce la prioridad de contenido de poco valor informativo.
 
-Finalmente, el sistema intenta crear una selección equilibrada entre instituciones y categorías, con un máximo actual de **30 noticias**.
+Finalmente, el sistema intenta crear una selección equilibrada entre instituciones y categorías, con un máximo actual de **14 noticias**. Si durante los últimos siete días no existen catorce publicaciones válidas y accesibles, se muestran todas las noticias fiables disponibles sin rellenar la selección con contenido antiguo o duplicado.
 
 ## 5. Se prepara el contenido de cada artículo
 
@@ -126,7 +126,9 @@ Cuando es posible, el sistema también intenta:
 
 El sistema respeta las restricciones de acceso. Si la página está bloqueada, detrás de un paywall, no permite la extracción o el resumen generado no supera las validaciones, se conserva el resumen original del RSS. La noticia puede publicarse igualmente sin interrumpir toda la actualización.
 
-Para controlar el tiempo y los recursos, actualmente solo se intenta generar un resumen ampliado nuevo por ejecución. Los resultados se guardan en una caché del actualizador.
+El actualizador intenta generar un resumen ampliado de cuatro párrafos para cada artículo seleccionado cuyo texto público se pueda consultar. Los resultados se guardan en una caché para no volver a procesar artículos que ya se hayan ampliado correctamente.
+
+Cuando una fuente bloquea el acceso, utiliza un paywall, no ofrece suficiente texto público o el resumen generado no supera las validaciones, se conserva el resumen RSS disponible. En esos casos no se inventa contenido para completar artificialmente los cuatro párrafos.
 
 ## 6. La información se escribe en el frontend
 
@@ -164,7 +166,7 @@ El recorrido dentro del frontend es el siguiente:
 1. `src/Data/news.ts` exporta las noticias de `generatedArticles.ts`.
 2. `src/Pages/HomePage.tsx` importa la colección `articles`.
 3. La página aplica el filtro de categoría y la búsqueda del usuario sobre el título, el resumen, la fuente y la categoría.
-4. Se muestran nueve resultados inicialmente y el usuario puede cargar otros nueve hasta completar la selección disponible.
+4. Se muestran hasta catorce resultados inicialmente. Si en el futuro la selección supera esa cantidad, el usuario puede cargar otros catorce hasta completar las noticias disponibles.
 5. Cada elemento visible se entrega al componente `NewsCard`.
 6. `src/Components/NewsCard.tsx` muestra la fuente, fecha, título, resumen, categoría y tiempo de lectura.
 7. El enlace **Weiterlesen** abre la ruta de detalle de la noticia.

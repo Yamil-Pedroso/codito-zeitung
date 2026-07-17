@@ -30,9 +30,9 @@ OUTPUT_FILE = FRONTEND / 'src' / 'Data' / 'generatedArticles.ts'
 USER_AGENT = 'CoditoZeitungWeb/1.0 (+RSS aggregator; yampe.dev)'
 OLLAMA_URL = 'http://127.0.0.1:11434/api/generate'
 OLLAMA_MODEL = 'qwen2.5:0.5b'
-SUMMARY_VERSION = 3
+SUMMARY_VERSION = 4
 FAILED_CACHE_TTL = dt.timedelta(hours=12)
-ARTICLE_LIMIT = 30
+ARTICLE_LIMIT = 14
 
 FEEDS = [
     ('SRF News', 'https://www.srf.ch/news/bnf/rss/1646', 4),
@@ -475,7 +475,7 @@ def extract_public_text(item) -> str:
         if len(paragraph) > remaining:
             break
     text = '\n\n'.join(selected)
-    return text if len(text) >= 1_200 else ''
+    return text if len(text) >= 700 else ''
 
 
 def ollama_text(prompt: str, max_tokens: int):
@@ -505,7 +505,7 @@ Verwende ausschliesslich belegte Fakten aus dem Quelltext. Keine Überschrift, k
 
 QUELLTEXT:
 {source_text}'''
-    result = ollama_text(prompt, 140)
+    result = ollama_text(prompt, 240)
     matches = re.findall(r'(?im)^\s*ABSATZ\s+[1-7]\s*:\s*(.+?)\s*$', result)
     paragraphs = [clean(value) for value in matches if clean(value)]
     if not 4 <= len(paragraphs) <= 7:
@@ -587,7 +587,7 @@ def article_id(url: str) -> int:
     return int(hashlib.sha256(url.encode()).hexdigest()[:10], 16) % 900_000_000 + 1_000
 
 
-def render_typescript(items) -> str:
+def render_typescript(items, mode: str, updated_at: dt.datetime) -> str:
     articles = []
     for item in items:
         published = dt.datetime.fromisoformat(item['date']).astimezone()
@@ -607,9 +607,11 @@ def render_typescript(items) -> str:
             }
         )
     lines = [
-        "import type { Article } from '../Types/news'",
+        "import type { Article, NewsUpdate } from '../Types/news'",
         '',
         '// Automatically generated from the configured Swiss RSS feeds. Do not edit manually.',
+        f'export const newsUpdate: NewsUpdate = {json.dumps({"updatedAt": updated_at.isoformat(), "mode": mode}, ensure_ascii=False)}',
+        '',
         'export const articles: Article[] = [',
     ]
     lines.extend(f'  {json.dumps(article, ensure_ascii=False)},' for article in articles)
@@ -617,9 +619,9 @@ def render_typescript(items) -> str:
     return '\n'.join(lines)
 
 
-def deploy(items) -> None:
+def deploy(items, mode: str, updated_at: dt.datetime) -> None:
     temporary = OUTPUT_FILE.with_suffix('.tmp')
-    temporary.write_text(render_typescript(items))
+    temporary.write_text(render_typescript(items, mode, updated_at))
     os.chmod(temporary, 0o644)
     temporary.replace(OUTPUT_FILE)
     environment = os.environ.copy()
@@ -670,11 +672,11 @@ def main() -> None:
         logging.info('end deployment=not_attempted')
         return
     cache = load_cache()
-    generation_budget = {'remaining': 1}
+    generation_budget = {'remaining': len(selected)}
     summary_priority = {'ETH Zürich': 0, 'SRF News': 1, 'WOZ': 2, 'NZZ': 3}
     for item in sorted(selected, key=lambda value: summary_priority.get(value['source'], 9)):
         item['content'] = content_for_article(item, cache, generation_budget)
-    deploy(selected)
+    deploy(selected, args.mode, started)
     state[state_key] = started.isoformat()
     state['last_article_count'] = len(selected)
     state['last_sources'] = sorted({item['source'] for item in selected})

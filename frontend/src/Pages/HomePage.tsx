@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { HiOutlineSearch, HiOutlineX } from 'react-icons/hi'
 import Header from '../Components/Header'
 import LeadStory from '../Components/LeadStory'
-import NewsCard from '../Components/NewsCard'
+import NewsViews from '../Components/NewsViews'
 import SectionTitle from '../Components/SectionTitle'
 import SourceCards from '../Components/SourceCards'
 import SwissStationClock from '../Components/SwissStationClock'
@@ -23,7 +23,7 @@ const filters = [
   'Sport',
 ] as const
 
-const PAGE_SIZE = 9
+const PAGE_SIZE = 14
 type Filter = (typeof filters)[number]
 
 export default function HomePage() {
@@ -105,9 +105,10 @@ export default function HomePage() {
         </div>
         <p className="result-count" aria-live="polite">{matchingArticles.length} {matchingArticles.length === 1 ? 'Nachricht gefunden' : 'Nachrichten gefunden'}</p>
         {visibleArticles.length ? <>
-          <div className="news-grid">
-            {visibleArticles.map((article, index) => <NewsCard key={article.id} article={article} featured={index === 0 && filter === 'Alle' && !query} saved={saved.includes(article.id)} onSave={() => { const nextSaved = !saved.includes(article.id); setSaved(setArticleSaved(article, nextSaved)) }} />)}
-          </div>
+          <NewsViews articles={visibleArticles} featureFirst={filter === 'Alle' && !query} saved={saved} onSave={(article) => {
+            const nextSaved = !saved.includes(article.id)
+            setSaved(setArticleSaved(article, nextSaved))
+          }} />
           {hasMore && <div className="load-more"><button onClick={() => setVisibleCount((count) => count + PAGE_SIZE)}>Mehr Nachrichten laden<span>Noch {matchingArticles.length - visibleArticles.length} verfügbar</span></button></div>}
         </> : <div className="empty-state"><span>⌕</span><h3>Keine passende Nachricht gefunden</h3><p>Versuchen Sie einen anderen Begriff oder wechseln Sie die Rubrik.</p><button onClick={resetSearch}>Alle Nachrichten anzeigen</button></div>}
       </section>

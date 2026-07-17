@@ -20,3 +20,8 @@ export interface Article {
   readTime: string
   imagePosition: string
 }
+
+export interface NewsUpdate {
+  updatedAt: string
+  mode: 'regular' | 'weekly'
+}

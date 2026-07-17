@@ -1,4 +1,4 @@
-export { articles } from './generatedArticles'
+export { articles, newsUpdate } from './generatedArticles'
 
 export const sourceDescriptions = [
   { name: 'WOZ', mark: 'WOZ', detail: 'Gesellschaft, Politik und Kultur', tint: '#8a5d2d', url: 'https://www.woz.ch' },

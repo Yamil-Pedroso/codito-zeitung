@@ -6,7 +6,7 @@ import kultur from "./images/cards-cat/cultura.webp";
 import transport from "./images/cards-cat/transporte_asuntos_zurich.webp";
 import sport from "./images/cards-cat/deportes.webp";
 import panorama from "./images/cards-cat/swiss-panorama.webp";
-import nature from "./images/cards-cat/nature.png";
+import nature from "./images/cards-cat/nature.webp";
 
 interface Asset {
   [key: string]: string;
